@@ -9,10 +9,10 @@
 
     public class ProductsController : Controller
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductsRepository _productRepository;
         private readonly IUserHelper _userHelper;
 
-        public ProductsController(IProductRepository productRepository, IUserHelper userHelper)
+        public ProductsController(IProductsRepository productRepository, IUserHelper userHelper)
         {
             _productRepository = productRepository;
             _userHelper = userHelper;

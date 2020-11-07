@@ -41,7 +41,7 @@ namespace Shop.Web
             });
 
             services.AddTransient<SeedDb>();
-            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductsRepository, ProductsRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<IUserHelper, UserHelper>();
 

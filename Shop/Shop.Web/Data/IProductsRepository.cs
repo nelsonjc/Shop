@@ -6,7 +6,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public interface IProductRepository: IGenericRepository<Product>
+    public interface IProductsRepository: IGenericRepository<Product>
     {
     }
 }
