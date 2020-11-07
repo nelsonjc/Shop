@@ -37,5 +37,11 @@ namespace Shop.Web.Data.Entities
 		public double Stock { get; set; }
 
         public User User { get; set; }
+        public string ImageFullPath { 
+			get => 
+				string.IsNullOrEmpty(this.ImageUrl) ?
+				null :
+				$"https://shopjara.azurewebsites.net{this.ImageUrl.Substring(1)}";
+		}
     }
 }
