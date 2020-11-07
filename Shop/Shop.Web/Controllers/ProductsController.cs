@@ -9,6 +9,7 @@
     using Models;
     using System.IO;
     using System.Linq;
+    using System;
 
     public class ProductsController : Controller
     {
@@ -57,18 +58,21 @@
         {
             if (ModelState.IsValid)
             {
+                var guid = Guid.NewGuid().ToString();
                 var path = string.Empty;
+                var nameFile = string.Empty;
 
                 if (view.ImageFile != null && view.ImageFile.Length > 0)
                 {
-                    path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", view.ImageFile.FileName);
+                    nameFile = $"{guid}.jpg";
+                    path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", nameFile);
 
                     using (var stream = new FileStream(path, FileMode.Create))
                     {
                         await view.ImageFile.CopyToAsync(stream);
                     }
 
-                    path = $"~/images/Products/{view.ImageFile.FileName}";
+                    path = $"~/images/Products/{nameFile}";
                 }
 
                 var product = this.ToProduct(view, path);
@@ -141,18 +145,21 @@
             {
                 try
                 {
+                    var guid = Guid.NewGuid().ToString();
+                    var nameFile = string.Empty;
                     var path = view.ImageUrl;
 
                     if (view.ImageFile != null && view.ImageFile.Length > 0)
                     {
-                        path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", view.ImageFile.FileName);
+                        nameFile = $"{guid}.jpg";
+                        path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", nameFile);
 
                         using (var stream = new FileStream(path, FileMode.Create))
                         {
                             await view.ImageFile.CopyToAsync(stream);
                         }
 
-                        path = $"~/images/Products/{view.ImageFile.FileName}";
+                        path = $"~/images/Products/{nameFile}";
                     }
 
                     var product = this.ToProduct(view, path);
