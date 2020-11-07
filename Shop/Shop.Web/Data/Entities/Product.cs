@@ -35,5 +35,7 @@ namespace Shop.Web.Data.Entities
 		[Column(TypeName = "decimal(18,2)")]
 		[DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)]
 		public double Stock { get; set; }
-	}
+
+        public User User { get; set; }
+    }
 }
