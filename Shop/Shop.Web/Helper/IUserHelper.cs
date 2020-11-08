@@ -19,6 +19,8 @@
         Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword);
 
         Task<SignInResult> ValidatePasswordAsync(User user, string password);
-
+        Task CheckRoleAsync(string roleName);
+        Task AddUserToroleAsync(User user, string roleName);
+        Task<bool> IsUserRoleAsync(User user, string roleName);
     }
 }

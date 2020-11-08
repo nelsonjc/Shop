@@ -24,6 +24,10 @@
         {
             await this._context.Database.EnsureCreatedAsync();
 
+            await _userHelper.CheckRoleAsync("Admin");
+            await _userHelper.CheckRoleAsync("Custumer");
+
+
             var user = await _userHelper.GetUserByEmailAsync("nelsonjaramilloc@gmail.com");
             if (user == null)
             {
@@ -38,10 +42,16 @@
 
                 var result = await _userHelper.AddUserAsync(user, "123456");
                 if (result != IdentityResult.Success)
-                {
                     throw new InvalidOperationException("Could not create the user in seeder");
-                }
+
+                await _userHelper.AddUserToroleAsync(user, "Admin");
             }
+
+            var isInRol = await _userHelper.IsUserRoleAsync(user, "Admin");
+
+            if (!isInRol)
+                await _userHelper.AddUserToroleAsync(user, "Admin");
+
 
             if (!this._context.Products.Any())
             {
