@@ -28,23 +28,21 @@
             return View(_productRepository.GetAll().OrderBy(p => p.Name));
         }
 
-        
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             return View(product);
         }
-
 
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
@@ -204,6 +202,11 @@
             var product = await _productRepository.GetByIdAsync(id);
             await _productRepository.DeleteAsync(product);
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult ProductNotFound()
+        {
+            return this.View();
         }
     }
 }
