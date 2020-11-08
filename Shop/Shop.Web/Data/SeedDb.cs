@@ -29,7 +29,7 @@
             {
                 user = new User
                 {
-                    FirtsName = "Nelson",
+                    FirstName = "Nelson",
                     LastName = "Jaramillo",
                     Email = "nelsonjaramilloc@gmail.com",
                     UserName = "nelsonjaramilloc@gmail.com",

@@ -7,7 +7,7 @@
         public MainViewModel Main { get; set; }
         public IntanceLocator()
         {
-            this.Main = new MainViewModel();
+            this.Main = MainViewModel.GetInstance();
         }
     }
 }

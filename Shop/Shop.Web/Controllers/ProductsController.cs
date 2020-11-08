@@ -10,7 +10,9 @@
     using System.IO;
     using System.Linq;
     using System;
+    using Microsoft.AspNetCore.Authorization;
 
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly IProductsRepository _productRepository;
@@ -76,9 +78,7 @@
                 }
 
                 var product = this.ToProduct(view, path);
-
-                //TODO: Change for logged use
-                product.User = await _userHelper.GetUserByEmailAsync("nelsonjaramillo@gmail.com");
+                product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                 await _productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
@@ -117,6 +117,7 @@
             }
 
             var view = this.ToProductViewModel(product);
+            product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
             return View(view);
         }
 
@@ -163,6 +164,7 @@
                     }
 
                     var product = this.ToProduct(view, path);
+                    product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                     await _productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)

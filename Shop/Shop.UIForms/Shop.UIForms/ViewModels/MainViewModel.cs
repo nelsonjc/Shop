@@ -6,7 +6,7 @@
         public LoginViewModel Login { get; set; }
         public ProductsViewModel Products { get; set; }
 
-        public MainViewModel()
+        private MainViewModel()
         {
             instance = this;
         }
