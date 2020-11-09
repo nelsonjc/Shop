@@ -65,13 +65,16 @@
                 if (result != IdentityResult.Success)
                     throw new InvalidOperationException("Could not create the user in seeder");
 
-                await _userHelper.AddUserToroleAsync(user, "Admin");
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
+                var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await _userHelper.ConfirmEmailAsync(user, token);
+
             }
 
             var isInRol = await _userHelper.IsUserInRoleAsync(user, "Admin");
 
             if (!isInRol)
-                await _userHelper.AddUserToroleAsync(user, "Admin");
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
 
 
             if (!this._context.Products.Any())

@@ -1,34 +1,37 @@
 ﻿namespace Shop.Web.Controllers
 {
+    using Data.Entities;
+    using Helper;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.IdentityModel.Tokens;
+    using Models;
+    using Shop.Web.Data;
     using System;
     using System.IdentityModel.Tokens.Jwt;
     using System.Linq;
     using System.Security.Claims;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Identity;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.IdentityModel.Tokens;
-    using Data.Entities;
-    using Helper;
-    using Models;
-    using Shop.Web.Data;
 
     public class AccountController : Controller
     {
         private readonly IUserHelper _userHelper;
         private readonly IConfiguration _configuration;
         private readonly ICountryRepository _countryRepository;
+        private readonly IMailHelper _mailHelper;
 
         public AccountController(
             IUserHelper userHelper,
             IConfiguration configuration,
-            ICountryRepository countryRepository)
+            ICountryRepository countryRepository,
+            IMailHelper mailHelper)
         {
             this._userHelper = userHelper;
             this._configuration = configuration;
             this._countryRepository = countryRepository;
+            this._mailHelper = mailHelper;
         }
 
         public IActionResult Login()
@@ -75,61 +78,6 @@
                 Countries = _countryRepository.GetComboCountries(),
                 Cities = _countryRepository.GetComboCities(0)
             };
-
-            return this.View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterNewUserViewModel model)
-        {
-            if (this.ModelState.IsValid)
-            {
-                var user = await this._userHelper.GetUserByEmailAsync(model.Username);
-                if (user == null)
-                {
-                    var city = await _countryRepository.GetCityAsync(model.CityId);
-
-                    user = new User
-                    {
-                        FirstName = model.FirstName,
-                        LastName = model.LastName,
-                        Email = model.Username,
-                        UserName = model.Username,
-                        Address = model.Address,
-                        PhoneNumber = model.PhoneNumber,
-                        CityId = model.CityId,
-                        City = city
-
-                    };
-
-                    var resultCreate = await this._userHelper.AddUserAsync(user, model.Password);
-                    if (resultCreate != IdentityResult.Success)
-                    {
-                        this.ModelState.AddModelError(string.Empty, "The user couldn't be created.");
-                        return this.View(model);
-                    }
-
-
-                    var loginViewModel = new LoginViewModel
-                    {
-                        Password = model.Password,
-                        RememberMe = false,
-                        Username = model.Username
-                    };
-
-                    var resultLogin = await this._userHelper.LoginAsync(loginViewModel);
-
-                    if (resultLogin.Succeeded)
-                    {
-                        return this.RedirectToAction("Index", "Home");
-                    }
-
-                    this.ModelState.AddModelError(string.Empty, "The user couldn't be login.");
-                    return this.View(model);
-                }
-
-                this.ModelState.AddModelError(string.Empty, "The username is already registered.");
-            }
 
             return this.View(model);
         }
@@ -277,7 +225,134 @@
         public async Task<IActionResult> GetCitiesAsync(int countryId)
         {
             var country = await _countryRepository.GetCountryWithCitiesAsync(countryId);
-            return Json(country != null ? country.Cities.OrderBy(c => c.Name): null);
+            return Json(country != null ? country.Cities.OrderBy(c => c.Name) : null);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterNewUserViewModel model)
+        {
+            if (this.ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(model.Username);
+                if (user == null)
+                {
+                    var city = await _countryRepository.GetCityAsync(model.CityId);
+
+                    user = new User
+                    {
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        Email = model.Username,
+                        UserName = model.Username,
+                        Address = model.Address,
+                        PhoneNumber = model.PhoneNumber,
+                        CityId = model.CityId,
+                        City = city
+                    };
+
+                    var result = await _userHelper.AddUserAsync(user, model.Password);
+                    if (result != IdentityResult.Success)
+                    {
+                        this.ModelState.AddModelError(string.Empty, "The user couldn't be created.");
+                        return this.View(model);
+                    }
+
+                    var myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                    var tokenLink = this.Url.Action("ConfirmEmail", "Account", new
+                    {
+                        userid = user.Id,
+                        token = myToken
+                    }, protocol: HttpContext.Request.Scheme);
+
+                    this._mailHelper.SendMail(model.Username, "Email confirmation", $"<h1>Email Confirmation</h1>" +
+                        $"To allow the user, " +
+                        $"plase click in this link:</br></br><a href = \"{tokenLink}\">Confirm Email</a>");
+                    this.ViewBag.Message = "The instructions to allow your user has been sent to email.";
+                    return this.View(model);
+                }
+
+                this.ModelState.AddModelError(string.Empty, "The username is already registered.");
+            }
+
+            return this.View(model);
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return this.NotFound();
+            }
+
+            var user = await _userHelper.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return this.NotFound();
+            }
+
+            var result = await _userHelper.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return this.NotFound();
+            }
+
+            return View();
+        }
+
+        public IActionResult RecoverPassword()
+        {
+            return this.View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecoverPassword(RecoverPasswordViewModel model)
+        {
+            if (this.ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "The email doesn't correspont to a registered user.");
+                    return this.View(model);
+                }
+
+                var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+                var link = this.Url.Action("ResetPassword", "Account", new { token = myToken }, protocol: HttpContext.Request.Scheme);
+                _mailHelper.SendMail(model.Email, "Shop Password Reset", $"<h1>Shop Password Reset</h1>" +
+                    $"To reset the password click in this link:</br></br>" +
+                    $"<a href = \"{link}\">Reset Password</a>");
+                this.ViewBag.Message = "The instructions to recover your password has been sent to email.";
+                return this.View();
+
+            }
+
+            return this.View(model);
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            var user = await _userHelper.GetUserByEmailAsync(model.UserName);
+            if (user != null)
+            {
+                var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+                if (result.Succeeded)
+                {
+                    this.ViewBag.Message = "Password reset successful.";
+                    return this.View();
+                }
+
+                this.ViewBag.Message = "Error while resetting the password.";
+                return View(model);
+            }
+
+            this.ViewBag.Message = "User not found.";
+            return View(model);
         }
 
         public IActionResult NotAuthorized()

@@ -26,7 +26,7 @@
             return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task AddUserToroleAsync(User user, string roleName)
+        public async Task AddUserToRoleAsync(User user, string roleName)
         {
             await _userManager.AddToRoleAsync(user, roleName);
         }
@@ -76,5 +76,31 @@
         {
             return await _userManager.IsInRoleAsync(user, roleName);
         }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
+        {
+            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<User> GetUserByIdAsync(string userId)
+        {
+            return await _userManager.FindByIdAsync(userId);
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
+
     }
 }
