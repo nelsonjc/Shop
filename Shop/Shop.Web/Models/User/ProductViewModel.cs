@@ -1,8 +1,8 @@
 ﻿namespace Shop.Web.Models
 {
+    using System.ComponentModel.DataAnnotations;
     using Microsoft.AspNetCore.Http;
     using Data.Entities;
-    using System.ComponentModel.DataAnnotations;
 
     public class ProductViewModel: Product
     {

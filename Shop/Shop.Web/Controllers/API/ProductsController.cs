@@ -9,9 +9,9 @@
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ProductsController: Controller
     {
-        private readonly IProductsRepository _productsRepository;
+        private readonly IProductRepository _productsRepository;
 
-        public ProductsController(IProductsRepository productsRepository)
+        public ProductsController(IProductRepository productsRepository)
         {
             _productsRepository = productsRepository;
         }

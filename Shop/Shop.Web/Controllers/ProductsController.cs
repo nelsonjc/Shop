@@ -14,10 +14,10 @@
 
     public class ProductsController : Controller
     {
-        private readonly IProductsRepository _productRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IUserHelper _userHelper;
 
-        public ProductsController(IProductsRepository productRepository, IUserHelper userHelper)
+        public ProductsController(IProductRepository productRepository, IUserHelper userHelper)
         {
             _productRepository = productRepository;
             _userHelper = userHelper;
@@ -50,7 +50,6 @@
             return View();
         }
 
-        // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductViewModel view)
@@ -134,7 +133,6 @@
             };
         }
 
-        // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductViewModel view)

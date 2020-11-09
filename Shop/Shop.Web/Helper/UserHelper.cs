@@ -1,9 +1,9 @@
 ﻿namespace Shop.Web.Helper
 {
-    using Microsoft.AspNetCore.Identity;
-    using Shop.Web.Data.Entities;
-    using Shop.Web.Models;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Identity;
+    using Data.Entities;
+    using Models;
 
     public class UserHelper : IUserHelper
     {
@@ -72,7 +72,7 @@
             return await _signInManager.CheckPasswordSignInAsync(user, password, false);
         }
 
-        public async Task<bool> IsUserRoleAsync(User user, string roleName)
+        public async Task<bool> IsUserInRoleAsync(User user, string roleName)
         {
             return await _userManager.IsInRoleAsync(user, roleName);
         }
